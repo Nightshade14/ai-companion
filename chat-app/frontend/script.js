@@ -88,7 +88,7 @@ sendButton.addEventListener('click', async () => {
     if (buffer.trim() && buffer.trim() !== '[DONE]') {
         try {
             const jsonStr = buffer.slice(6); // Remove the "data: " prefix
-            console.log('Attempting to parse remaining buffer JSON:', jsonStr);
+            // console.log('Attempting to parse remaining buffer JSON:', jsonStr);
             const startIndex = jsonStr.indexOf('{');
             if (startIndex !== -1) {
                 const jsonString = jsonStr.substring(startIndex);
