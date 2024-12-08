@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 import requests
 
@@ -32,12 +32,12 @@ chat_history.append({'role': 'system', 'content': preamble})
 # LMSTUDIO_API_URL = 'http://192.168.1.68:1234/v1/chat/completions'
 LMSTUDIO_API_URL = "http://localhost:1234/v1/chat/completions"
 
-# MODEL_ID = "llama-3.2-3b-qnn"
-# MODEL_ID = "meta-llama-3.1-8b-instruct"
-MODEL_ID = "llama-3.2-3b-instruct"
 # MODEL_ID = "gemma-2-27b-it"
 # MODEL_ID = "internlm2_5-20b-chat"
 # MODEL_ID = "mistral-7b-instruct-v0.3"
+# MODEL_ID = "meta-llama-3.1-8b-instruct"
+# MODEL_ID = "llama-3.2-3b-qnn"
+MODEL_ID = "llama-3.2-3b-instruct"
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -52,23 +52,34 @@ def chat():
         "messages": chat_history,
         "temperature": 0.1,
         "max_tokens": -1,
-        "stream": False
+        "stream": True
     }
 
     headers = {
         'Content-Type': 'application/json'
     }
 
+    def generate():
+        with requests.post(LMSTUDIO_API_URL, json=payload, headers=headers, stream=True) as r:
+            for line in r.iter_lines():
+                if line:
+                    yield f"data: {line.decode('utf-8')}\n\n"
+
+    return Response(stream_with_context(generate()), content_type='text/event-stream')
+
+
+
+
     # Send request to LMStudio API
-    response = requests.post(LMSTUDIO_API_URL, json=payload, headers=headers)
+    # response = requests.post(LMSTUDIO_API_URL, json=payload, headers=headers)
     
-    if response.status_code == 200:
-        bot_message = response.json().get('choices')[0]['message']['content']
-        # Append bot response to chat history
-        chat_history.append({'role': 'assistant', 'content': bot_message})
-        return jsonify({'response': bot_message})
-    else:
-        return jsonify({'error': 'Failed to get response from LMStudio API'}), 500
+    # if response.status_code == 200:
+    #     bot_message = response.json().get('choices')[0]['message']['content']
+    #     # Append bot response to chat history
+    #     chat_history.append({'role': 'assistant', 'content': bot_message})
+    #     return jsonify({'response': bot_message})
+    # else:
+    #     return jsonify({'error': 'Failed to get response from LMStudio API'}), 500
 
 @app.route('/history', methods=['GET'])
 def get_history():
