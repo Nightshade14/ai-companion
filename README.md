@@ -1,3 +1,4 @@
 # ai-companion
 
-- Utlizes Snapdragon X-Elite chip's NPUs to leverage on-device LLMs for privacy first AI inference.
+- Qualcomm x Microsoft Edge AI Hackathon
+- utilized Snapdragon X-Elite chipset's NPUs to enable privacy focused, low-latency, and battery-efficient AI inference
